@@ -10,6 +10,7 @@ import { URL } from 'url';
 import { AppConfig } from '../config/app.config';
 import { AuthConfig } from '../config/auth.config';
 import { CustomizationConfig } from '../config/customization.config';
+import { DefaultAccessPermission } from '../config/default-access-permission.enum';
 import { ExternalServicesConfig } from '../config/external-services.config';
 import { GitlabScope, GitlabVersion } from '../config/gitlab.enum';
 import { Loglevel } from '../config/loglevel.enum';
@@ -350,6 +351,12 @@ describe('FrontendConfigService', () => {
                 const noteConfig: NoteConfig = {
                   forbiddenNoteIds: [],
                   maxDocumentLength: maxDocumentLength,
+                  permissions: {
+                    accessDefault: {
+                      everyone: DefaultAccessPermission.READ,
+                      loggedIn: DefaultAccessPermission.WRITE,
+                    },
+                  },
                 };
                 const module: TestingModule = await Test.createTestingModule({
                   imports: [

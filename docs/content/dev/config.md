@@ -34,6 +34,9 @@ The config of HedgeDoc is split up into **eight** different modules:
 `media.config.ts`
 : Where media files are being stored
 
+`note.config.ts`
+: Configuration for notes
+
 Each of those files (except `auth.config.ts` which is discussed later) consists of three parts:
 
 1. An interface

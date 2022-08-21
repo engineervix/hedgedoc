@@ -33,6 +33,15 @@ We also provide an `.env.example` file containing a minimal configuration in the
 
 If the renderer is provided by another domain, it's way harder to manipulate HedgeDoc or steal credentials from the rendered note content, because renderer and editor are more isolated. This increases the security of the software and greatly mitigates [XSS attacks](https://en.wikipedia.org/wiki/Cross-site_scripting). However, you can run HedgeDoc without this extra security, but we recommend using it if possible.
 
+## Notes
+
+| environment variable                     | default | example                      | description                                                                                                                                                                                                               |
+|------------------------------------------|---------|------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `HD_FORBIDDEN_NOTE_IDS`                  | -       | `notAllowed, alsoNotAllowed` | A list of note ids (separated by `,`), that are not allowed to be created or requested by anyone.                                                                                                                         |
+| `HD_MAX_DOCUMENT_LENGTH`                 | 100000  |                              | The maximum length of any one document. Changes to this will impact performance for your users.                                                                                                                           |
+| `HD_PERMISSION_LOGGED_IN_DEFAULT_ACCESS` | write   | `none, read, write`          | The default permission for logged-in users that is set on new notes                                                                                                                                                       |
+| `HD_PERMISSION_EVERYONE_DEFAULT_ACCESS`  | read    | `none, read, write`          | The default permission for everyone (logged-in & non-logged-in users) that is set on new notes. This is only applied on notes that are created by logged in users. Notes created by guests are always writable by guests. |
+
 ## Authentication
 
 **ToDo:** Add Authentication docs
