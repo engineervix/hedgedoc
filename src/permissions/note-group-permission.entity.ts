@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021 The HedgeDoc developers (see AUTHORS file)
+ * SPDX-FileCopyrightText: 2022 The HedgeDoc developers (see AUTHORS file)
  *
  * SPDX-License-Identifier: AGPL-3.0-only
  */
@@ -22,6 +22,7 @@ export class NoteGroupPermission {
 
   @ManyToOne((_) => Group, {
     onDelete: 'CASCADE', // This deletes the NoteGroupPermission, when the associated Group is deleted
+    orphanedRowAction: 'delete', // This ensures the whole row is deleted when the Permission stops being referenced
   })
   group: Group;
 
@@ -30,6 +31,7 @@ export class NoteGroupPermission {
 
   @ManyToOne((_) => Note, (note) => note.groupPermissions, {
     onDelete: 'CASCADE', // This deletes the NoteGroupPermission, when the associated Note is deleted
+    orphanedRowAction: 'delete', // This ensures the whole row is deleted when the Permission stops being referenced
   })
   note: Note;
 
