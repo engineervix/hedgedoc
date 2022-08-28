@@ -15,11 +15,13 @@ import { buildErrorMessage, parseOptionalNumber, toArrayConfig } from './utils';
 export interface NoteConfig {
   forbiddenNoteIds: string[];
   maxDocumentLength: number;
+  everyoneAccessAllowed: boolean;
   permissions: {
     accessDefault: {
       everyone: DefaultAccessPermission;
       loggedIn: DefaultAccessPermission;
     };
+    everyoneCanCreateNotes: boolean;
   };
 }
 
@@ -35,6 +37,10 @@ const schema = Joi.object<NoteConfig>({
     .integer()
     .optional()
     .label('HD_MAX_DOCUMENT_LENGTH'),
+  everyoneAccessAllowed: Joi.boolean()
+    .optional()
+    .default(true)
+    .label('HD_EVERYONE_ACCESS_ALLOWED'),
   permissions: {
     accessDefault: {
       everyone: Joi.string()
@@ -48,8 +54,42 @@ const schema = Joi.object<NoteConfig>({
         .default(DefaultAccessPermission.WRITE)
         .label('HD_PERMISSION_LOGGED_IN_DEFAULT_ACCESS'),
     },
+    everyoneCanCreateNotes: Joi.boolean()
+      .default(false)
+      .optional()
+      .label('HD_PERMISSION_EVERYONE_CAN_CREATE_NOTES'),
   },
 });
+
+function checkEveryoneConfigConsistent(config: NoteConfig): void {
+  const everyoneDefaultSet =
+    process.env.HD_PERMISSION_EVERYONE_DEFAULT_ACCESS !== undefined;
+  const everyoneMayCreateSet =
+    process.env.HD_PERMISSION_EVERYONE_CAN_CREATE_NOTES !== undefined;
+  if (
+    !config.everyoneAccessAllowed &&
+    (everyoneDefaultSet || everyoneMayCreateSet)
+  ) {
+    // Access for everyone is forbidden, but there are still option regarding everyone set. This is a wrong configuration state.
+    const environmentVariable = everyoneDefaultSet
+      ? 'HD_PERMISSION_EVERYONE_DEFAULT_ACCESS'
+      : 'HD_PERMISSION_EVERYONE_CAN_CREATE_NOTES';
+    throw new Error(
+      `'HD_EVERYONE_ACCESS_ALLOWED' is set to 'false', but '${environmentVariable}' is also configured. Please remove '${environmentVariable}'.`,
+    );
+  }
+}
+
+function checkEveryoneCanEditCreatedNotes(config: NoteConfig): void {
+  if (
+    config.permissions.everyoneCanCreateNotes &&
+    config.permissions.accessDefault.everyone === DefaultAccessPermission.NONE
+  ) {
+    throw new Error(
+      `Guests can't access created notes because HD_PERMISSION_EVERYONE_CAN_CREATE_NOTES is 'true' but HD_PERMISSION_EVERYONE_DEFAULT_ACCESS is '${config.permissions.accessDefault.everyone}'`,
+    );
+  }
+}
 
 function checkLoggedInUsersHaveHigherDefaultPermissionsThanGuests(
   config: NoteConfig,
@@ -73,13 +113,16 @@ export default registerAs('noteConfig', () => {
       maxDocumentLength: parseOptionalNumber(
         process.env.HD_MAX_DOCUMENT_LENGTH,
       ),
+      everyoneAccessAllowed: process.env.HD_EVERYONE_ACCESS_ALLOWED,
       permissions: {
         accessDefault: {
           everyone: process.env.HD_PERMISSION_EVERYONE_DEFAULT_ACCESS,
           loggedIn: process.env.HD_PERMISSION_LOGGED_IN_DEFAULT_ACCESS,
         },
+        everyoneCanCreateNotes:
+          process.env.HD_PERMISSION_EVERYONE_CAN_CREATE_NOTES,
       },
-    } as NoteConfig,
+    },
     {
       abortEarly: false,
       presence: 'required',
@@ -92,6 +135,8 @@ export default registerAs('noteConfig', () => {
     throw new Error(buildErrorMessage(errorMessages));
   }
   const config = noteConfig.value;
+  checkEveryoneConfigConsistent(config);
+  checkEveryoneCanEditCreatedNotes(config);
   checkLoggedInUsersHaveHigherDefaultPermissionsThanGuests(config);
   return config;
 });

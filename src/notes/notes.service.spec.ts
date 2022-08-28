@@ -6,7 +6,12 @@
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { DataSource, EntityManager, Repository } from 'typeorm';
+import {
+  DataSource,
+  EntityManager,
+  FindOptionsWhere,
+  Repository,
+} from 'typeorm';
 
 import { AuthToken } from '../auth/auth-token.entity';
 import { Author } from '../authors/author.entity';
@@ -78,10 +83,7 @@ describe('NotesService', () => {
     jest
       .spyOn(noteRepo, 'save')
       .mockImplementation(async (note: Note): Promise<Note> => note);
-    jest
-      .spyOn(groupRepo, 'findOne')
-      .mockResolvedValueOnce(everyone as Group)
-      .mockResolvedValueOnce(loggedin as Group);
+    mockGroupRepo();
     const note = await service.createNote(content, null);
     const revisions = await note.revisions;
     revisions[0].edits = Promise.resolve([
@@ -144,6 +146,20 @@ describe('NotesService', () => {
     note.viewCount = 1337;
 
     return [note, user, group];
+  }
+
+  function mockGroupRepo() {
+    jest.spyOn(groupRepo, 'findOne').mockReset();
+    jest.spyOn(groupRepo, 'findOne').mockImplementation((args) => {
+      const groupName = (args.where as FindOptionsWhere<Group>).name;
+      if (groupName === loggedin.name) {
+        return Promise.resolve(loggedin as Group);
+      } else if (groupName === everyone.name) {
+        return Promise.resolve(everyone as Group);
+      } else {
+        return Promise.resolve(null);
+      }
+    });
   }
 
   beforeEach(async () => {
@@ -338,10 +354,7 @@ describe('NotesService', () => {
         jest
           .spyOn(noteRepo, 'save')
           .mockImplementation(async (note: Note): Promise<Note> => note);
-        jest
-          .spyOn(groupRepo, 'findOne')
-          .mockResolvedValueOnce(everyone as Group)
-          .mockResolvedValueOnce(loggedin as Group);
+        mockGroupRepo();
       });
       it('without alias, without owner', async () => {
         const newNote = await service.createNote(content, null);
@@ -353,7 +366,7 @@ describe('NotesService', () => {
         const groupPermissions = await newNote.groupPermissions;
         expect(groupPermissions).toHaveLength(2);
         expect(groupPermissions[0].canEdit).toEqual(
-          everyoneDefaultAccessPermission === DefaultAccessPermission.WRITE,
+          everyoneDefaultAccessPermission !== DefaultAccessPermission.WRITE,
         );
         expect(groupPermissions[0].group.name).toEqual(SpecialGroup.EVERYONE);
         expect(groupPermissions[1].canEdit).toEqual(
@@ -396,7 +409,7 @@ describe('NotesService', () => {
         const groupPermissions = await newNote.groupPermissions;
         expect(groupPermissions).toHaveLength(2);
         expect(groupPermissions[0].canEdit).toEqual(
-          everyoneDefaultAccessPermission === DefaultAccessPermission.WRITE,
+          everyoneDefaultAccessPermission !== DefaultAccessPermission.WRITE,
         );
         expect(groupPermissions[0].group.name).toEqual(SpecialGroup.EVERYONE);
         expect(groupPermissions[1].canEdit).toEqual(
@@ -437,10 +450,7 @@ describe('NotesService', () => {
               DefaultAccessPermission.NONE),
         );
         it('default permissions', async () => {
-          jest.spyOn(groupRepo, 'findOne').mockReset();
-          jest
-            .spyOn(groupRepo, 'findOne')
-            .mockResolvedValueOnce(loggedin as Group);
+          mockGroupRepo();
           const newNote = await service.createNote(content, user, alias);
           const revisions = await newNote.revisions;
           expect(revisions).toHaveLength(1);
@@ -471,10 +481,7 @@ describe('NotesService', () => {
       });
 
       it('alias is already used', async () => {
-        jest
-          .spyOn(groupRepo, 'findOne')
-          .mockResolvedValueOnce(everyone as Group)
-          .mockResolvedValueOnce(loggedin as Group);
+        mockGroupRepo();
         jest.spyOn(noteRepo, 'save').mockImplementationOnce(async () => {
           throw new Error();
         });
@@ -491,10 +498,7 @@ describe('NotesService', () => {
       jest
         .spyOn(noteRepo, 'save')
         .mockImplementation(async (note: Note): Promise<Note> => note);
-      jest
-        .spyOn(groupRepo, 'findOne')
-        .mockResolvedValueOnce(everyone as Group)
-        .mockResolvedValueOnce(loggedin as Group);
+      mockGroupRepo();
       const newNote = await service.createNote(content, null);
       const revisions = await newNote.revisions;
       jest.spyOn(revisionRepo, 'findOne').mockResolvedValueOnce(revisions[0]);

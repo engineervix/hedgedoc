@@ -46,10 +46,11 @@ export class FrontendConfigService {
 
   async getFrontendConfig(): Promise<FrontendConfigDto> {
     return {
-      // ToDo: use actual value here
-      allowAnonymous: false,
+      allowAnonymous: this.noteConfig.everyoneAccessAllowed,
       allowRegister: this.authConfig.local.enableRegister,
       authProviders: this.getAuthProviders(),
+      everyoneCanCreateNotes:
+        this.noteConfig.permissions.everyoneCanCreateNotes,
       branding: this.getBranding(),
       iframeCommunication: this.getIframeCommunication(),
       maxDocumentLength: this.noteConfig.maxDocumentLength,

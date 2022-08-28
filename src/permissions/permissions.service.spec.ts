@@ -273,6 +273,23 @@ describe('PermissionsService', () => {
     });
   });
   describe('mayWrite works with', () => {
+    beforeAll(() => {
+      noteMockConfig = registerAs(
+        'noteConfig',
+        (): NoteConfig => ({
+          maxDocumentLength: 100000,
+          forbiddenNoteIds: ['forbiddenNoteId'],
+          everyoneAccessAllowed: false,
+          permissions: {
+            accessDefault: {
+              everyone: DefaultAccessPermission.WRITE,
+              loggedIn: DefaultAccessPermission.WRITE,
+            },
+            everyoneCanCreateNotes: true,
+          },
+        }),
+      );
+    });
     it('Owner', async () => {
       service.guestPermission = GuestPermission.DENY;
       expect(await service.mayWrite(user1, notes[0])).toBeTruthy();

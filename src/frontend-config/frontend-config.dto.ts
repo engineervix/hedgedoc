@@ -152,6 +152,12 @@ export class FrontendConfigDto extends BaseDto {
   allowRegister: boolean;
 
   /**
+   * Are guests allowed to create notes?
+   */
+  @IsBoolean()
+  everyoneCanCreateNotes: boolean;
+
+  /**
    * Which auth providers are enabled and how are they configured?
    */
   @IsArray()

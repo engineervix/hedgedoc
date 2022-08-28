@@ -192,7 +192,15 @@ describe('FrontendConfigService', () => {
                   return {
                     forbiddenNoteIds: [],
                     maxDocumentLength: 200,
-                  };
+                    everyoneAccessAllowed: true,
+                    permissions: {
+                      accessDefault: {
+                        everyone: DefaultAccessPermission.READ,
+                        loggedIn: DefaultAccessPermission.WRITE,
+                      },
+                      everyoneCanCreateNotes: false,
+                    },
+                  } as NoteConfig;
                 }),
               ],
             }),
@@ -351,11 +359,13 @@ describe('FrontendConfigService', () => {
                 const noteConfig: NoteConfig = {
                   forbiddenNoteIds: [],
                   maxDocumentLength: maxDocumentLength,
+                  everyoneAccessAllowed: true,
                   permissions: {
                     accessDefault: {
                       everyone: DefaultAccessPermission.READ,
                       loggedIn: DefaultAccessPermission.WRITE,
                     },
+                    everyoneCanCreateNotes: false,
                   },
                 };
                 const module: TestingModule = await Test.createTestingModule({
@@ -384,8 +394,12 @@ describe('FrontendConfigService', () => {
                 const service = module.get(FrontendConfigService);
                 const config = await service.getFrontendConfig();
                 expect(config.allowRegister).toEqual(enableRegister);
-
-                expect(config.allowAnonymous).toEqual(false);
+                expect(config.allowAnonymous).toEqual(
+                  noteConfig.everyoneAccessAllowed,
+                );
+                expect(config.everyoneCanCreateNotes).toEqual(
+                  noteConfig.permissions.everyoneCanCreateNotes,
+                );
                 expect(config.branding.name).toEqual(customName);
                 expect(config.branding.logo).toEqual(
                   customLogo ? new URL(customLogo) : undefined,

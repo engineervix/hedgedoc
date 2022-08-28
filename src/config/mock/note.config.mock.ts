@@ -7,7 +7,6 @@ import { ConfigFactoryKeyHost, registerAs } from '@nestjs/config';
 import { ConfigFactory } from '@nestjs/config/dist/interfaces';
 
 import { DefaultAccessPermission } from '../default-access-permission.enum';
-import { DefaultAccessPermission } from '../default-access-permission.enum';
 import { NoteConfig } from '../note.config';
 
 export function createDefaultMockNoteConfig(): NoteConfig {
@@ -19,7 +18,9 @@ export function createDefaultMockNoteConfig(): NoteConfig {
         everyone: DefaultAccessPermission.READ,
         loggedIn: DefaultAccessPermission.WRITE,
       },
+      everyoneCanCreateNotes: true,
     },
+    everyoneAccessAllowed: true,
   };
 }
 
