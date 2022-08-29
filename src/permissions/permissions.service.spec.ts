@@ -10,10 +10,15 @@ import { DataSource, EntityManager, Repository } from 'typeorm';
 
 import { AuthToken } from '../auth/auth-token.entity';
 import { Author } from '../authors/author.entity';
+import { DefaultAccessPermission } from '../config/default-access-permission.enum';
 import appConfigMock from '../config/mock/app.config.mock';
 import authConfigMock from '../config/mock/auth.config.mock';
 import databaseConfigMock from '../config/mock/database.config.mock';
-import noteConfigMock from '../config/mock/note.config.mock';
+import {
+  createDefaultMockNoteConfig,
+  registerNoteConfig,
+} from '../config/mock/note.config.mock';
+import { NoteConfig } from '../config/note.config';
 import { PermissionsUpdateInconsistentError } from '../errors/errors';
 import { Group } from '../groups/group.entity';
 import { GroupsModule } from '../groups/groups.module';
@@ -36,7 +41,7 @@ import { UsersModule } from '../users/users.module';
 import { NoteGroupPermission } from './note-group-permission.entity';
 import { NoteUserPermission } from './note-user-permission.entity';
 import { PermissionsModule } from './permissions.module';
-import { GuestPermission, PermissionsService } from './permissions.service';
+import { PermissionsService } from './permissions.service';
 
 describe('PermissionsService', () => {
   let service: PermissionsService;
@@ -44,6 +49,7 @@ describe('PermissionsService', () => {
   let noteRepo: Repository<Note>;
   let userRepo: Repository<User>;
   let groupRepo: Repository<Group>;
+  const noteMockConfig: NoteConfig = createDefaultMockNoteConfig();
 
   beforeAll(async () => {
     /**
@@ -98,7 +104,7 @@ describe('PermissionsService', () => {
             appConfigMock,
             databaseConfigMock,
             authConfigMock,
-            noteConfigMock,
+            registerNoteConfig(noteMockConfig),
           ],
         }),
         GroupsModule,
@@ -199,8 +205,11 @@ describe('PermissionsService', () => {
     const everybody = {} as Group;
     everybody.name = SpecialGroup.EVERYONE;
     everybody.special = true;
-    const noteEverybodyRead = createNote(user1);
 
+    const noteEverybodyNone = createNote(user1);
+    noteEverybodyNone.groupPermissions = Promise.resolve([]);
+
+    const noteEverybodyRead = createNote(user1);
     const noteGroupPermissionRead = {} as NoteGroupPermission;
     noteGroupPermissionRead.group = everybody;
     noteGroupPermissionRead.canEdit = false;
@@ -210,7 +219,6 @@ describe('PermissionsService', () => {
     ]);
 
     const noteEverybodyWrite = createNote(user1);
-
     const noteGroupPermissionWrite = {} as NoteGroupPermission;
     noteGroupPermissionWrite.group = everybody;
     noteGroupPermissionWrite.canEdit = true;
@@ -230,23 +238,21 @@ describe('PermissionsService', () => {
       note7,
       noteEverybodyRead,
       noteEverybodyWrite,
+      noteEverybodyNone,
     ];
   }
 
   describe('mayRead works with', () => {
     it('Owner', async () => {
-      service.guestPermission = GuestPermission.DENY;
       expect(await service.mayRead(user1, notes[0])).toBeTruthy();
       expect(await service.mayRead(user1, notes[7])).toBeFalsy();
     });
     it('userPermission read', async () => {
-      service.guestPermission = GuestPermission.DENY;
       expect(await service.mayRead(user1, notes[1])).toBeTruthy();
       expect(await service.mayRead(user1, notes[2])).toBeTruthy();
       expect(await service.mayRead(user1, notes[3])).toBeTruthy();
     });
     it('userPermission write', async () => {
-      service.guestPermission = GuestPermission.DENY;
       expect(await service.mayRead(user1, notes[4])).toBeTruthy();
       expect(await service.mayRead(user1, notes[5])).toBeTruthy();
       expect(await service.mayRead(user1, notes[6])).toBeTruthy();
@@ -254,76 +260,50 @@ describe('PermissionsService', () => {
     });
 
     describe('guest permission', () => {
-      it('CREATE_ALIAS', async () => {
-        service.guestPermission = GuestPermission.CREATE_ALIAS;
+      it('guest permission none', async () => {
+        expect(await service.mayRead(null, notes[10])).toBeFalsy();
+      });
+      it('guest permission read', async () => {
         expect(await service.mayRead(null, notes[8])).toBeTruthy();
       });
-      it('CREATE', async () => {
-        service.guestPermission = GuestPermission.CREATE;
-        expect(await service.mayRead(null, notes[8])).toBeTruthy();
-      });
-      it('WRITE', async () => {
-        service.guestPermission = GuestPermission.WRITE;
-        expect(await service.mayRead(null, notes[8])).toBeTruthy();
-      });
-      it('READ', async () => {
-        service.guestPermission = GuestPermission.READ;
-        expect(await service.mayRead(null, notes[8])).toBeTruthy();
+      it('guest permission write', async () => {
+        expect(await service.mayRead(null, notes[9])).toBeTruthy();
       });
     });
   });
+
   describe('mayWrite works with', () => {
-    beforeAll(() => {
-      noteMockConfig = registerAs(
-        'noteConfig',
-        (): NoteConfig => ({
-          maxDocumentLength: 100000,
-          forbiddenNoteIds: ['forbiddenNoteId'],
-          everyoneAccessAllowed: false,
-          permissions: {
-            accessDefault: {
-              everyone: DefaultAccessPermission.WRITE,
-              loggedIn: DefaultAccessPermission.WRITE,
-            },
-            everyoneCanCreateNotes: true,
-          },
-        }),
-      );
-    });
     it('Owner', async () => {
-      service.guestPermission = GuestPermission.DENY;
       expect(await service.mayWrite(user1, notes[0])).toBeTruthy();
       expect(await service.mayWrite(user1, notes[7])).toBeFalsy();
     });
     it('userPermission read', async () => {
-      service.guestPermission = GuestPermission.DENY;
       expect(await service.mayWrite(user1, notes[1])).toBeFalsy();
       expect(await service.mayWrite(user1, notes[2])).toBeFalsy();
       expect(await service.mayWrite(user1, notes[3])).toBeFalsy();
     });
     it('userPermission write', async () => {
-      service.guestPermission = GuestPermission.DENY;
       expect(await service.mayWrite(user1, notes[4])).toBeTruthy();
       expect(await service.mayWrite(user1, notes[5])).toBeTruthy();
       expect(await service.mayWrite(user1, notes[6])).toBeTruthy();
       expect(await service.mayWrite(user1, notes[7])).toBeFalsy();
     });
     describe('guest permission', () => {
-      it('CREATE_ALIAS', async () => {
-        service.guestPermission = GuestPermission.CREATE_ALIAS;
-        expect(await service.mayWrite(null, notes[9])).toBeTruthy();
+      beforeEach(() => {
+        noteMockConfig.permissions.everyoneCanCreateNotes = true;
+        noteMockConfig.permissions.accessDefault.loggedIn =
+          DefaultAccessPermission.WRITE;
+        noteMockConfig.permissions.accessDefault.everyone =
+          DefaultAccessPermission.WRITE;
       });
-      it('CREATE', async () => {
-        service.guestPermission = GuestPermission.CREATE;
-        expect(await service.mayWrite(null, notes[9])).toBeTruthy();
+      it('guest permission none', async () => {
+        expect(await service.mayWrite(null, notes[10])).toBeFalsy();
       });
-      it('WRITE', async () => {
-        service.guestPermission = GuestPermission.WRITE;
-        expect(await service.mayWrite(null, notes[9])).toBeTruthy();
+      it('guest permission read', async () => {
+        expect(await service.mayWrite(null, notes[8])).toBeFalsy();
       });
-      it('READ', async () => {
-        service.guestPermission = GuestPermission.READ;
-        expect(await service.mayWrite(null, notes[9])).toBeFalsy();
+      it('guest permission write', async () => {
+        expect(await service.mayWrite(null, notes[9])).toBeTruthy();
       });
     });
   });
@@ -467,7 +447,7 @@ describe('PermissionsService', () => {
    * creates the matrix multiplication of group0 to group4 of createAllNoteGroupPermissions
    */
   function createNoteGroupPermissionsCombinations(
-    guestPermission: GuestPermission,
+    everyoneDefaultPermission: DefaultAccessPermission,
   ): NoteGroupPermissionWithResultForUser[] {
     // for logged in users
     const noteGroupPermissions = createAllNoteGroupPermissions();
@@ -493,16 +473,15 @@ describe('PermissionsService', () => {
               }
 
               if (group2 !== null) {
-                // everybody group TODO config options
-                switch (guestPermission) {
-                  case GuestPermission.CREATE_ALIAS:
-                  case GuestPermission.CREATE:
-                  case GuestPermission.WRITE:
-                    writePermission = writePermission || group2.canEdit;
-                    readPermission = true;
-                    break;
-                  case GuestPermission.READ:
-                    readPermission = true;
+                if (
+                  everyoneDefaultPermission === DefaultAccessPermission.WRITE
+                ) {
+                  writePermission = writePermission || group2.canEdit;
+                  readPermission = true;
+                } else if (
+                  everyoneDefaultPermission === DefaultAccessPermission.READ
+                ) {
+                  readPermission = true;
                 }
                 insert.push(group2);
               }
@@ -575,9 +554,9 @@ describe('PermissionsService', () => {
   }
 
   describe('check if groups work with', () => {
-    const guestPermission = GuestPermission.WRITE;
-    const rawPermissions =
-      createNoteGroupPermissionsCombinations(guestPermission);
+    const rawPermissions = createNoteGroupPermissionsCombinations(
+      DefaultAccessPermission.WRITE,
+    );
     const permissions = permuteNoteGroupPermissions(rawPermissions);
     let i = 0;
     for (const permission of permissions) {
@@ -588,13 +567,11 @@ describe('PermissionsService', () => {
         permissionString += ` ${perm.group.name}:${String(perm.canEdit)}`;
       }
       it(`mayWrite - test #${i}:${permissionString}`, async () => {
-        service.guestPermission = guestPermission;
         expect(await service.mayWrite(user1, note)).toEqual(
           permission.allowsWrite,
         );
       });
       it(`mayRead - test #${i}:${permissionString}`, async () => {
-        service.guestPermission = guestPermission;
         expect(await service.mayRead(user1, note)).toEqual(
           permission.allowsRead,
         );
@@ -603,40 +580,33 @@ describe('PermissionsService', () => {
     }
   });
 
-  describe('mayCreate works for', () => {
-    it('logged in', () => {
-      service.guestPermission = GuestPermission.DENY;
+  describe('mayCreate', () => {
+    it('allows creation for logged in', () => {
       expect(service.mayCreate(user1)).toBeTruthy();
     });
-    it('guest denied', () => {
-      service.guestPermission = GuestPermission.DENY;
-      expect(service.mayCreate(null)).toBeFalsy();
-    });
-    it('guest read', () => {
-      service.guestPermission = GuestPermission.READ;
-      expect(service.mayCreate(null)).toBeFalsy();
-    });
-    it('guest write', () => {
-      service.guestPermission = GuestPermission.WRITE;
-      expect(service.mayCreate(null)).toBeFalsy();
-    });
-    it('guest create', () => {
-      service.guestPermission = GuestPermission.CREATE;
+    it('allows creation of notes for guests with permission', () => {
+      noteMockConfig.permissions.everyoneCanCreateNotes = true;
+      noteMockConfig.permissions.accessDefault.loggedIn =
+        DefaultAccessPermission.WRITE;
+      noteMockConfig.permissions.accessDefault.everyone =
+        DefaultAccessPermission.WRITE;
       expect(service.mayCreate(null)).toBeTruthy();
     });
-    it('guest create alias', () => {
-      service.guestPermission = GuestPermission.CREATE_ALIAS;
-      expect(service.mayCreate(null)).toBeTruthy();
+    it('denies creation of notes for guests without permission', () => {
+      noteMockConfig.permissions.everyoneCanCreateNotes = false;
+      noteMockConfig.permissions.accessDefault.loggedIn =
+        DefaultAccessPermission.WRITE;
+      noteMockConfig.permissions.accessDefault.everyone =
+        DefaultAccessPermission.WRITE;
+      expect(service.mayCreate(null)).toBeFalsy();
     });
   });
 
   describe('isOwner works', () => {
     it('for positive case', async () => {
-      service.guestPermission = GuestPermission.DENY;
       expect(await service.isOwner(user1, notes[0])).toBeTruthy();
     });
     it('for negative case', async () => {
-      service.guestPermission = GuestPermission.DENY;
       expect(await service.isOwner(user1, notes[1])).toBeFalsy();
     });
   });
