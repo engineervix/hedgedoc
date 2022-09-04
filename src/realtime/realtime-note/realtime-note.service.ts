@@ -13,6 +13,7 @@ import { Note } from '../../notes/note.entity';
 import { RevisionsService } from '../../revisions/revisions.service';
 import { RealtimeNote } from './realtime-note';
 import { RealtimeNoteStore } from './realtime-note-store';
+import { encodeDocumentDeletedMessage, encodeMetadataUpdatedMessage } from '@hedgedoc/realtime';
 
 @Injectable()
 export class RealtimeNoteService implements BeforeApplicationShutdown {
@@ -55,6 +56,20 @@ export class RealtimeNoteService implements BeforeApplicationShutdown {
     return (
       this.realtimeNoteStore.find(note.id) ??
       (await this.createNewRealtimeNote(note))
+    );
+  }
+
+
+  public announcePermissionChange(realtimeNote: RealtimeNote): void {
+    realtimeNote.sendToAllClients(
+      encodeMetadataUpdatedMessage()
+    );
+  }
+
+
+  public announceNoteDeletion(realtimeNote: RealtimeNote): void {
+    realtimeNote.sendToAllClients(
+      encodeDocumentDeletedMessage()
     );
   }
 

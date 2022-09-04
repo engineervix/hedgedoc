@@ -20,6 +20,8 @@ import { UsersService } from '../users/users.service';
 import { checkArrayForDuplicates } from '../utils/arrayDuplicatCheck';
 import { NoteGroupPermission } from './note-group-permission.entity';
 import { NoteUserPermission } from './note-user-permission.entity';
+import { RealtimeNoteService } from '../realtime/realtime-note/realtime-note.service';
+import { RealtimeNoteStore } from '../realtime/realtime-note/realtime-note-store';
 
 @Injectable()
 export class PermissionsService {
@@ -30,6 +32,8 @@ export class PermissionsService {
     private readonly logger: ConsoleLoggerService,
     @Inject(noteConfiguration.KEY)
     private noteConfig: NoteConfig,
+    private realtimeNoteService: RealtimeNoteService,
+    private realtimeNoteStore: RealtimeNoteStore,
   ) {}
 
   /**
@@ -137,6 +141,13 @@ export class PermissionsService {
     return false;
   }
 
+  private notifyOthers(noteId: Note['id']) {
+    const realtimeNote = this.realtimeNoteStore.find(noteId);
+    if (realtimeNote) {
+      this.realtimeNoteService.announcePermissionChange(realtimeNote);
+    }
+  }
+
   /**
    * @async
    * Update a notes permissions.
@@ -198,7 +209,7 @@ export class PermissionsService {
       createdPermission.note = note;
       (await note.groupPermissions).push(createdPermission);
     }
-
+    this.notifyOthers(note.id);
     return await this.noteRepository.save(note);
   }
 
@@ -232,6 +243,7 @@ export class PermissionsService {
       );
       (await note.userPermissions).push(noteUserPermission);
     }
+    this.notifyOthers(note.id);
     return await this.noteRepository.save(note);
   }
 
@@ -248,6 +260,7 @@ export class PermissionsService {
       (value) => value.user.id != permissionUser.id,
     );
     note.userPermissions = Promise.resolve(permissionsFiltered);
+    this.notifyOthers(note.id);
     return await this.noteRepository.save(note);
   }
 
@@ -281,6 +294,7 @@ export class PermissionsService {
       );
       (await note.groupPermissions).push(noteGroupPermission);
     }
+    this.notifyOthers(note.id);
     return await this.noteRepository.save(note);
   }
 
@@ -302,6 +316,7 @@ export class PermissionsService {
       },
     );
     note.groupPermissions = Promise.resolve(permissionsFiltered);
+    this.notifyOthers(note.id);
     return await this.noteRepository.save(note);
   }
 
@@ -314,6 +329,7 @@ export class PermissionsService {
    */
   async changeOwner(note: Note, owner: User): Promise<Note> {
     note.owner = Promise.resolve(owner);
+    this.notifyOthers(note.id);
     return await this.noteRepository.save(note);
   }
 }

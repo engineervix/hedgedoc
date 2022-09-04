@@ -269,6 +269,10 @@ export class NotesService {
    * @throws {NotInDBError} there is no note with this id or alias
    */
   async deleteNote(note: Note): Promise<Note> {
+    const realtimeNote = this.realtimeNoteStore.find(note.id);
+    if (realtimeNote) {
+      this.realtimeNoteService.announceNoteDeletion(realtimeNote);
+    }
     return await this.noteRepository.remove(note);
   }
 

@@ -130,4 +130,15 @@ export class RealtimeNote extends (EventEmitter as TypedEventEmitterConstructor<
   public getNote(): Note {
     return this.note;
   }
+
+  /**
+   * Broadcasts the given content to all connected clients.
+   *
+   * @param {Uint8Array} content The binary message to broadcast
+   */
+  public sendToAllClients(content: Uint8Array): void {
+    this.getConnections().forEach(connection => {
+      connection.send(content)
+    })
+  }
 }
