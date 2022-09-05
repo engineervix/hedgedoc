@@ -14,7 +14,7 @@
     "dev": "webpack --config webpack.dev.js --progress --watch",
     "heroku-prebuild": "bin/heroku",
     "build": "webpack --config webpack.prod.js --progress",
-    "start": "node app.js"
+    "start": "pm2 start ecosystem.config.json --no-daemon"
   },
   "dependencies": {
     "@passport-next/passport-openid": "^1.0.0",
@@ -85,6 +85,7 @@
     "pdfobject": "^2.0.201604172",
     "pg": "^8.2.1",
     "pg-hstore": "^2.3.3",
+    "pm2": "^5.2.0",
     "prom-client": "^14.0.0",
     "prometheus-api-metrics": "^3.2.0",
     "randomcolor": "^0.6.0",
