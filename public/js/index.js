@@ -86,8 +86,6 @@ import getUIElements from './lib/editor/ui-elements'
 import modeType from './lib/modeType'
 import appState from './lib/appState'
 
-import refTagger from './reftagger.js'
-
 require('../vendor/showup/showup')
 
 require('../css/index.css')
@@ -3872,15 +3870,12 @@ function matchInContainer (text) {
   }
 }
 
-(function (d, t) {
-  const n = d.querySelector('[nonce]')
-  refTagger.settings.nonce = n && (n.nonce || n.getAttribute('nonce'))
-  const g = d.createElement(t)
-  const s = d.getElementsByTagName(t)[0]
-  g.src = 'https://api.reftagger.com/v2/RefTagger.js'
-  g.nonce = refTagger.settings.nonce
-  s.parentNode.insertBefore(g, s)
-})(document, 'script')
+const refTagger = window.refTagger || {}
+refTagger.settings = {
+  bibleVersion: 'ESV',
+  tooltipStyle: 'dark'
+}
+window.refTagger = refTagger
 
 $(editor.getInputField())
   .textcomplete(
