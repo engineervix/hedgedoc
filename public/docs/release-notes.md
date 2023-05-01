@@ -1,12 +1,38 @@
 # Release Notes
-## <i class="fa fa-tag"></i> 1.x.x <i class="fa fa-calendar-o"></i> UNRELEASED
+
+## <i class="fa fa-tag"></i> 1.9.7 <i class="fa fa-calendar-o"></i> 2023-02-19
+
+### Bugfixes
+- Fix note titles with special characters producing invalid file names in user export zip file
+- Fix night-mode toggle not working when page is loaded with night-mode enabled
+
+### Contributors
+- Francesco (translator)
+- Gabriel Santiago Macedo (translator)
+
+## <i class="fa fa-tag"></i> 1.9.6 <i class="fa fa-calendar-o"></i> 2022-11-06
+
+### Bugfixes
+- Fix migrations deleting all notes when SQLite is used
+
+## <i class="fa fa-tag"></i> 1.9.5 <i class="fa fa-calendar-o"></i> 2022-10-30
 
 ### Enhancements
 - Add dark mode toggle in mobile view
-- Replace embedding shortcode regexes with more specific ones to safeguard against xss attacks
+- Replace embedding shortcode regexes with more specific ones to safeguard against XSS attacks
 
 ### Bugfixes
 - Fix a crash when using LDAP authentication with custom search attributes (thanks to [@aboettger-tuhh](https://github.com/aboettger-tuhh) for reporting)
+- Fix a crash caused by a long note history when the MySQL database is used
+- Fix `breaks` option not being respected in the publish-view
+- Fix missing syntax highlighting in the markdown editor
+
+### Contributors
+- Bateausurleau (translator)
+- Goncalo (translator)
+- Ívarr Vinter (translator)
+- Oein0219 (translator)
+- [Pol Dellaiera](https://github.com/drupol)
 
 ## <i class="fa fa-tag"></i> 1.9.4 <i class="fa fa-calendar-o"></i> 2022-07-10
 
