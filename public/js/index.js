@@ -3870,13 +3870,6 @@ function matchInContainer (text) {
   }
 }
 
-const refTagger = window.refTagger || {}
-refTagger.settings = {
-  bibleVersion: 'ESV',
-  tooltipStyle: 'dark'
-}
-window.refTagger = refTagger
-
 $(editor.getInputField())
   .textcomplete(
     [
