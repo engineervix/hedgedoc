@@ -27,7 +27,10 @@ USER node
 COPY package.json yarn.lock ./
 
 # Install the application dependencies
-RUN yarn install --inline-builds
+RUN yarn install --immutable
+
+# Build the frontend bundle
+RUN yarn run build
 
 # Copy the rest of the code to the container
 COPY --chown=node:node . .
