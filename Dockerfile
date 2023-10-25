@@ -27,11 +27,14 @@ USER node
 COPY --chown=node:node . .
 
 # Install the application dependencies
-RUN yarn install --immutable
+# RUN yarn install --immutable
 
-# Build the frontend bundle
-RUN yarn run build \
-  && yarn workspaces focus --production
+# # Build the frontend bundle
+# RUN yarn run build \
+#   && yarn workspaces focus --production
+
+# Install packages
+RUN yarn workspaces focus --production
 
 # Runtime command that executes when "docker run" is called
 CMD yarn start
