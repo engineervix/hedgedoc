@@ -29,11 +29,11 @@ COPY package.json yarn.lock ./
 # Install the application dependencies
 RUN yarn install --immutable
 
-# Build the frontend bundle
-RUN yarn run build
-
 # Copy the rest of the code to the container
 COPY --chown=node:node . .
+
+# Build the frontend bundle
+RUN yarn run build
 
 # Runtime command that executes when "docker run" is called
 CMD yarn start
