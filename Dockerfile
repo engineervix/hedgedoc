@@ -25,17 +25,14 @@ USER node
 
 # Copy the code to the container
 COPY --chown=node:node . .
-COPY --chown=node:node config.json.example config.json
+# COPY --chown=node:node config.json.example config.json
 
 # Install the application dependencies
-# RUN yarn install --immutable
+RUN yarn install --immutable
 
 # # Build the frontend bundle
-# RUN yarn run build \
-#   && yarn workspaces focus --production
-
-# Install packages
-RUN yarn workspaces focus --production
+RUN yarn run build \
+  && yarn workspaces focus --production
 
 # Runtime command that executes when "docker run" is called
 CMD yarn start
