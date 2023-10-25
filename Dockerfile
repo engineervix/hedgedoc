@@ -1,4 +1,4 @@
-FROM arm64v8/node:16.20-bullseye-slim
+FROM arm64v8/node:16.20-bullseye
 
 # necessary on ARM because puppeteer doesn't provide a prebuilt binary
 ENV PUPPETEER_SKIP_DOWNLOAD=true
@@ -14,9 +14,10 @@ WORKDIR /app
 COPY package.json yarn.lock ./
 
 # Install the application dependencies
-RUN corepack enable
-RUN yarn set version 3.x
-RUN yarn install
+RUN corepack enable \
+  && corepack prepare yarn@3.x --activate \
+  && yarn set version 3.x \
+  && yarn install
 
 # Copy the rest of your application code to the container
 COPY --chown=node:node . .
@@ -27,4 +28,4 @@ ENV PATH ./node_modules/.bin:$PATH
 # EXPOSE 3000
 
 # Define the command to start your Node.js application
-CMD yarn start
+CMD ["yarn", "start"]
