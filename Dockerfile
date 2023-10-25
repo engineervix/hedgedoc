@@ -1,4 +1,4 @@
-FROM arm64v8/node:16.20-bullseye
+FROM node:16.20-bullseye
 
 # necessary on ARM because puppeteer doesn't provide a prebuilt binary
 ENV PUPPETEER_SKIP_DOWNLOAD=true
