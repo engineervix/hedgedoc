@@ -3,7 +3,6 @@ FROM arm64v8/node:16.20-bullseye
 # necessary on ARM because puppeteer doesn't provide a prebuilt binary
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 ENV NODE_ENV=production
-ENV YARN_CACHE_FOLDER=/tmp/.yarn
 
 RUN mkdir -p /app && chown -R node:node /app
 
@@ -17,6 +16,8 @@ EXPOSE 8000
 ENV PORT=8000 \
     PATH=./node_modules/.bin:$PATH
 
+RUN corepack enable
+
 # Switch to the non-root user
 USER node
 
@@ -24,8 +25,7 @@ USER node
 COPY package.json yarn.lock ./
 
 # Install the application dependencies
-RUN corepack enable \
-  && yarn set version 3.6.4 \
+RUN yarn set version 3.6.4 \
   && yarn install --inline-builds
 
 # Copy the rest of the code to the container
