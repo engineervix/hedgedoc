@@ -23,17 +23,15 @@ RUN corepack enable \
 # Switch to the non-root user
 USER node
 
-# Copy the package.json and yarn.lock files to the container
-COPY package.json yarn.lock ./
+# Copy the code to the container
+COPY --chown=node:node . .
 
 # Install the application dependencies
 RUN yarn install --immutable
 
-# Copy the rest of the code to the container
-COPY --chown=node:node . .
-
 # Build the frontend bundle
-RUN yarn run build
+RUN yarn run build \
+  && yarn workspaces focus --production
 
 # Runtime command that executes when "docker run" is called
 CMD yarn start
