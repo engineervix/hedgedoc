@@ -17,8 +17,7 @@ ENV PORT=8000 \
     PATH=./node_modules/.bin:$PATH
 
 # Yarn 3 requires corepack to be enabled
-RUN corepack enable \
-  && yarn set version 3.6.4
+RUN corepack enable
 
 # Switch to the non-root user
 USER node
