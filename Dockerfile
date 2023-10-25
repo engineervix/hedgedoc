@@ -10,22 +10,26 @@ RUN mkdir -p /app && chown -R node:node /app
 # Set the working directory in the container
 WORKDIR /app
 
+# Port used by this container to serve HTTP.
+EXPOSE 8000
+
+# set environment variables
+ENV PORT=8000 \
+    PATH=./node_modules/.bin:$PATH
+
+# Switch to the non-root user
+USER node
+
 # Copy the package.json and yarn.lock files to the container
 COPY package.json yarn.lock ./
 
 # Install the application dependencies
 RUN corepack enable \
-  && corepack prepare yarn@3.6.4 --activate \
   && yarn set version 3.6.4 \
-  && yarn install
+  && yarn install --inline-builds
 
-# Copy the rest of your application code to the container
+# Copy the rest of the code to the container
 COPY --chown=node:node . .
 
-ENV PATH ./node_modules/.bin:$PATH
-
-# Expose the port your Node.js application will run on (if necessary)
-# EXPOSE 3000
-
-# Define the command to start your Node.js application
-CMD ["yarn", "start"]
+# Runtime command that executes when "docker run" is called
+CMD yarn start
