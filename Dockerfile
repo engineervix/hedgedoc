@@ -10,13 +10,12 @@ RUN mkdir -p /app && chown -R node:node /app
 # Set the working directory in the container
 WORKDIR /app
 
-# Install Yarn globally
-RUN npm install -g yarn@3
-
 # Copy the package.json and yarn.lock files to the container
 COPY package.json yarn.lock ./
 
 # Install the application dependencies
+RUN corepack enable
+RUN yarn set version 3.x
 RUN yarn install
 
 # Copy the rest of your application code to the container
