@@ -28,4 +28,4 @@ ENV PATH ./node_modules/.bin:$PATH
 # EXPOSE 3000
 
 # Define the command to start your Node.js application
-# CMD ["yarn", "start"]
+CMD yarn start
