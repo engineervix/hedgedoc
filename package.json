@@ -14,7 +14,7 @@
     "dev": "webpack --config webpack.dev.js --progress --watch",
     "heroku-prebuild": "bin/heroku",
     "build": "webpack --config webpack.prod.js --progress",
-    "start": "pm2 start ecosystem.config.json --no-daemon"
+    "start": "pm2-runtime start ecosystem.config.json --update-env"
   },
   "dependencies": {
     "@passport-next/passport-openid": "1.0.0",
