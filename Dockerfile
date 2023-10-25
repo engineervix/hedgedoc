@@ -16,7 +16,9 @@ EXPOSE 8000
 ENV PORT=8000 \
     PATH=./node_modules/.bin:$PATH
 
-RUN corepack enable
+# Yarn 3 requires corepack to be enabled
+RUN corepack enable \
+  && yarn set version 3.6.4
 
 # Switch to the non-root user
 USER node
@@ -25,8 +27,7 @@ USER node
 COPY package.json yarn.lock ./
 
 # Install the application dependencies
-RUN yarn set version 3.6.4 \
-  && yarn install --inline-builds
+RUN yarn install --inline-builds
 
 # Copy the rest of the code to the container
 COPY --chown=node:node . .
