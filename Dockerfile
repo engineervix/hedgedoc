@@ -29,7 +29,7 @@ ARG CMD_S3_ENDPOINT
 
 # set environment variables
 ENV PORT=8000 \
-    PATH=./node_modules/.bin:$PATH
+    PATH=./node_modules/.bin:$PATH \
     CMD_DB_URL=$CMD_DB_URL \
     CMD_DOMAIN=$CMD_DOMAIN \
     CMD_SESSION_SECRET=$CMD_SESSION_SECRET \
