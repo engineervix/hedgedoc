@@ -15,8 +15,8 @@ COPY package.json yarn.lock ./
 
 # Install the application dependencies
 RUN corepack enable \
-  && corepack prepare yarn@3.x --activate \
-  && yarn set version 3.x \
+  && corepack prepare yarn@3.6.4 --activate \
+  && yarn set version 3.6.4 \
   && yarn install
 
 # Copy the rest of your application code to the container
