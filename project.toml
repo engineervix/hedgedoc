@@ -1,5 +1,0 @@
-[_]
-schema-version = "0.2"
-
-[io.buildpacks]
-builder = "urn:cnb:registry:paketo-buildpacks/nodejs"
