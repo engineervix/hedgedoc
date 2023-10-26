@@ -12,8 +12,7 @@ EXPOSE 8000
 ENV PORT=8000 \
     NODE_ENV=production \
     # necessary on ARM because puppeteer doesn't provide a prebuilt binary
-    PUPPETEER_SKIP_DOWNLOAD=true \
-    PATH=./node_modules/.bin:$PATH
+    PUPPETEER_SKIP_DOWNLOAD=true
 
 # Yarn 3 requires corepack to be enabled
 RUN corepack enable
