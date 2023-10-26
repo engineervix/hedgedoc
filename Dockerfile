@@ -1,4 +1,4 @@
-FROM node:16.20-bullseye
+FROM node:18.18.2-bullseye
 
 RUN mkdir -p /app && chown -R node:node /app
 
