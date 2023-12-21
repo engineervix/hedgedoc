@@ -31,4 +31,5 @@ RUN yarn run build \
   && yarn workspaces focus --production
 
 # Runtime command that executes when "docker run" is called
-CMD yarn start
+# do nothing forever - exec commands elsewhere
+CMD tail -f /dev/null
