@@ -23,7 +23,7 @@ ARG CMD_DOMAIN \
     CMD_DB_USER \
     CMD_DB_HOST \
     CMD_DB_PORT \
-    CMD_DB_URL \
+    CMD_DB_URL
 ENV PORT=8000 \
     CMD_PORT=8000 \
     CMD_IMAGE_UPLOAD_TYPE=s3 \
@@ -46,7 +46,7 @@ ENV PORT=8000 \
     CMD_DB_USER=${CMD_DB_USER} \
     CMD_DB_HOST=${CMD_DB_HOST} \
     CMD_DB_PORT=${CMD_DB_PORT} \
-    CMD_DB_URL=${CMD_DB_URL}
+    CMD_DB_URL=${CMD_DB_URL} \
     # necessary on ARM because puppeteer doesn't provide a prebuilt binary
     PUPPETEER_SKIP_DOWNLOAD=true
 
