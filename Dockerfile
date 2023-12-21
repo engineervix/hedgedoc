@@ -60,6 +60,10 @@ USER node
 COPY --chown=node:node . .
 COPY --chown=node:node config.json.example ./config.json
 
+# Remove the "saml" section from the config.json file
+# because of https://community.hedgedoc.org/t/change-certificate-file-path-of-idp-in-pem-format/108/3
+RUN sed -i '/"saml": {/,/},/d' ./config.json
+
 # Install the application dependencies
 RUN yarn workspaces focus --production
 
