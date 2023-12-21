@@ -58,6 +58,7 @@ USER node
 
 # Copy the code to the container
 COPY --chown=node:node . .
+COPY --chown=node:node config.json.example ./config.json
 
 # Install the application dependencies
 RUN yarn install --immutable
