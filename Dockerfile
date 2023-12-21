@@ -61,11 +61,11 @@ COPY --chown=node:node . .
 COPY --chown=node:node config.json.example ./config.json
 
 # Install the application dependencies
-RUN yarn install --immutable
+RUN yarn workspaces focus --production
 
 # # Build the frontend bundle
-RUN yarn run build \
-  && yarn workspaces focus --production
+RUN yarn install --immutable \
+  && yarn run build
 
 # Runtime command that executes when "docker run" is called
 # do nothing forever - exec commands elsewhere
