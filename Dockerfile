@@ -1,9 +1,10 @@
 FROM node:18.18.2-bullseye
 
-RUN mkdir -p /app && chown -R node:node /app
+RUN mkdir -p /home/node/app && chown -R node:node /home/node/app
+RUN mkdir -p /home/node/config && chown -R node:node /home/node/config
 
 # Set the working directory in the container
-WORKDIR /app
+WORKDIR /home/node/app
 
 # Port used by this container to serve HTTP.
 EXPOSE 8000
